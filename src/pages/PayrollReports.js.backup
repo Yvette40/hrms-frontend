@@ -1,0 +1,352 @@
+// src/pages/PayrollReports.js
+import React, { useState, useEffect } from 'react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar, Line, Pie } from 'react-chartjs-2';
+import './PayrollReports.css';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+/**
+ * Payroll Reports & Analytics Dashboard
+ * Provides comprehensive payroll insights with charts and export functionality
+ */
+
+function PayrollReports() {
+  const [payrolls, setPayrolls] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [reportPeriod, setReportPeriod] = useState('monthly');
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    fetchPayrollData();
+  }, []);
+
+  const fetchPayrollData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://127.0.0.1:5000/payrolls', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setPayrolls(data);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching payroll data:', error);
+      setLoading(false);
+    }
+  };
+
+  const getMonthlyData = () => {
+    const monthlyTotals = {};
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    months.forEach((month, index) => {
+      monthlyTotals[month] = { gross: 0, deductions: 0, net: 0 };
+    });
+
+    payrolls.forEach(payroll => {
+      const date = new Date(payroll.period_start);
+      if (date.getFullYear() === selectedYear) {
+        const month = months[date.getMonth()];
+        monthlyTotals[month].gross += parseFloat(payroll.gross_salary);
+        monthlyTotals[month].net += parseFloat(payroll.gross_salary) - parseFloat(payroll.gross_salary) * 0.3; // Approximate
+      }
+    });
+
+    return {
+      labels: months,
+      datasets: [
+        {
+          label: 'Gross Salary',
+          data: months.map(m => monthlyTotals[m].gross),
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 2,
+        },
+        {
+          label: 'Net Salary',
+          data: months.map(m => monthlyTotals[m].net),
+          backgroundColor: 'rgba(75, 192, 192, 0.5)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 2,
+        },
+      ],
+    };
+  };
+
+  const getDeductionsBreakdown = () => {
+    let totalNSSF = 0;
+    let totalNHIF = 0;
+    let totalPAYE = 0;
+    let totalHousingLevy = 0;
+
+    payrolls.forEach(payroll => {
+      const gross = parseFloat(payroll.gross_salary);
+      // Approximate calculations for demo
+      totalNSSF += gross * 0.06;
+      totalNHIF += 500; // Average
+      totalPAYE += gross * 0.15;
+      totalHousingLevy += gross * 0.015;
+    });
+
+    return {
+      labels: ['NSSF', 'NHIF', 'PAYE', 'Housing Levy'],
+      datasets: [
+        {
+          data: [totalNSSF, totalNHIF, totalPAYE, totalHousingLevy],
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.8)',
+            'rgba(54, 162, 235, 0.8)',
+            'rgba(255, 206, 86, 0.8)',
+            'rgba(75, 192, 192, 0.8)',
+          ],
+          borderWidth: 2,
+        },
+      ],
+    };
+  };
+
+  const getSalaryDistribution = () => {
+    const ranges = {
+      '0-30k': 0,
+      '30k-50k': 0,
+      '50k-70k': 0,
+      '70k+': 0,
+    };
+
+    payrolls.forEach(payroll => {
+      const salary = parseFloat(payroll.gross_salary);
+      if (salary < 30000) ranges['0-30k']++;
+      else if (salary < 50000) ranges['30k-50k']++;
+      else if (salary < 70000) ranges['50k-70k']++;
+      else ranges['70k+']++;
+    });
+
+    return {
+      labels: Object.keys(ranges),
+      datasets: [
+        {
+          label: 'Number of Employees',
+          data: Object.values(ranges),
+          backgroundColor: 'rgba(153, 102, 255, 0.6)',
+          borderColor: 'rgba(153, 102, 255, 1)',
+          borderWidth: 2,
+        },
+      ],
+    };
+  };
+
+  const calculateSummaryStats = () => {
+    if (payrolls.length === 0) return { totalGross: 0, totalNet: 0, avgSalary: 0, employees: 0 };
+
+    const totalGross = payrolls.reduce((sum, p) => sum + parseFloat(p.gross_salary), 0);
+    const totalNet = payrolls.reduce((sum, p) => sum + parseFloat(p.gross_salary) * 0.7, 0);
+    const uniqueEmployees = new Set(payrolls.map(p => p.employee_id)).size;
+
+    return {
+      totalGross,
+      totalNet,
+      avgSalary: totalGross / payrolls.length,
+      employees: uniqueEmployees,
+    };
+  };
+
+  const exportToCSV = () => {
+    const headers = ['Employee', 'Period Start', 'Period End', 'Gross Salary', 'Net Salary', 'Status'];
+    const rows = payrolls.map(p => [
+      p.employee,
+      p.period_start,
+      p.period_end,
+      p.gross_salary,
+      (parseFloat(p.gross_salary) * 0.7).toFixed(2),
+      p.status,
+    ]);
+
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `payroll_report_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  };
+
+  if (loading) {
+    return (
+      <div className="container mt-5">
+        <div className="text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = calculateSummaryStats();
+
+  return (
+    <div className="container-fluid payroll-reports">
+      <div className="row">
+        {/* Header */}
+        <div className="col-12">
+          <div className="reports-header">
+            <h2>📊 Payroll Reports & Analytics</h2>
+            <div className="header-controls">
+              <select
+                className="form-select"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+              >
+                <option value={2024}>2024</option>
+                <option value={2025}>2025</option>
+                <option value={2026}>2026</option>
+              </select>
+              <button className="btn btn-success" onClick={exportToCSV}>
+                📥 Export CSV
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="col-12">
+          <div className="row g-3 mb-4">
+            <div className="col-md-3">
+              <div className="card stat-card">
+                <div className="card-body">
+                  <h6 className="card-subtitle text-muted">Total Employees</h6>
+                  <h3 className="card-title text-primary">{stats.employees}</h3>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-3">
+              <div className="card stat-card">
+                <div className="card-body">
+                  <h6 className="card-subtitle text-muted">Total Gross Salary</h6>
+                  <h3 className="card-title text-info">KES {stats.totalGross.toLocaleString()}</h3>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-3">
+              <div className="card stat-card">
+                <div className="card-body">
+                  <h6 className="card-subtitle text-muted">Total Net Salary</h6>
+                  <h3 className="card-title text-success">KES {stats.totalNet.toLocaleString()}</h3>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-3">
+              <div className="card stat-card">
+                <div className="card-body">
+                  <h6 className="card-subtitle text-muted">Average Salary</h6>
+                  <h3 className="card-title text-warning">KES {stats.avgSalary.toLocaleString()}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Charts */}
+        <div className="col-md-8">
+          <div className="card mb-4">
+            <div className="card-header">
+              <h5>📈 Monthly Payroll Trend ({selectedYear})</h5>
+            </div>
+            <div className="card-body">
+              <Bar data={getMonthlyData()} options={{ responsive: true }} />
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-4">
+          <div className="card mb-4">
+            <div className="card-header">
+              <h5>🥧 Deductions Breakdown</h5>
+            </div>
+            <div className="card-body">
+              <Pie data={getDeductionsBreakdown()} options={{ responsive: true }} />
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-header">
+              <h5>📊 Salary Distribution</h5>
+            </div>
+            <div className="card-body">
+              <Bar data={getSalaryDistribution()} options={{ responsive: true }} />
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-header">
+              <h5>📋 Recent Payroll Records</h5>
+            </div>
+            <div className="card-body">
+              <div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                <table className="table table-sm table-hover">
+                  <thead>
+                    <tr>
+                      <th>Employee</th>
+                      <th>Period</th>
+                      <th>Salary</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payrolls.slice(0, 10).map((p, idx) => (
+                      <tr key={idx}>
+                        <td>{p.employee}</td>
+                        <td>{p.period_start}</td>
+                        <td>KES {parseFloat(p.gross_salary).toLocaleString()}</td>
+                        <td>
+                          <span className={`badge bg-${p.status === 'Approved' ? 'success' : 'warning'}`}>
+                            {p.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default PayrollReports;

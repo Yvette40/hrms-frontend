@@ -1,0 +1,83 @@
+/* src/pages/EmployeeSelfService.css */
+
+.employee-portal {
+  padding: 20px;
+}
+
+.portal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.portal-header h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.portal-header p {
+  margin: 5px 0 0 0;
+  opacity: 0.9;
+}
+
+.stat-card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card .card-subtitle {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-card .card-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.nav-tabs .nav-link {
+  color: #667eea;
+  font-weight: 500;
+  border: none;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s;
+}
+
+.nav-tabs .nav-link:hover {
+  border-color: #667eea;
+  background: transparent;
+}
+
+.nav-tabs .nav-link.active {
+  color: #667eea;
+  background: transparent;
+  border-bottom: 3px solid #667eea;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .portal-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .stat-card .card-title {
+    font-size: 1.4rem;
+  }
+}

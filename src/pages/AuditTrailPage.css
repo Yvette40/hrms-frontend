@@ -1,0 +1,140 @@
+.audit-page {
+  background-color: #f9fafb;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e3a8a;
+  margin-bottom: 16px;
+}
+
+.toggle-filters-btn {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.filters-container input,
+.filters-container select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.date-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.apply-btn {
+  padding: 8px 16px;
+  background-color: #1e3a8a;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.table-container {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+thead tr {
+  background-color: #1e3a8a;
+  color: white;
+}
+
+tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background 0.2s;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+tbody tr:hover {
+  background-color: #e0e7ff;
+}
+
+td, th {
+  padding: 10px;
+}
+
+.no-logs {
+  text-align: center;
+  color: #6b7280;
+  padding: 20px;
+}
+
+/* Responsive Table */
+@media screen and (max-width: 768px) {
+  table thead {
+    display: none;
+  }
+  table, tbody, tr, td {
+    display: block;
+    width: 100%;
+  }
+  tr {
+    margin-bottom: 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px;
+  }
+  td {
+    padding: 6px;
+    border: none;
+    position: relative;
+    padding-left: 50%;
+  }
+  td::before {
+    position: absolute;
+    top: 6px;
+    left: 12px;
+    width: 45%;
+    white-space: nowrap;
+    font-weight: 600;
+    content: attr(data-label);
+  }
+}
