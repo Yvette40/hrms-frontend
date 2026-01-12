@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRole } from "./RoleContext";
-import axios from "axios";
+import axios from "./axiosConfig";
+import config from "./config";
 import "./Login.css";
 
 function Login() {
@@ -35,8 +36,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://127.0.0.1:5000/login", {
-        username,
+      const response = await axios.post(config.auth.login, {        username,
         password,
       });
 

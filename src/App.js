@@ -21,6 +21,7 @@ import Leave from './Leave';
 import Users from './Users';
 import Payslips from './Payslips';
 import MyAttendance from "./MyAttendance";
+import './axiosConfig';  // Add this line
 
 
 
