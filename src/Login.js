@@ -30,6 +30,13 @@ function Login() {
     }
   }, []);
 
+  const quickLoginAsAdmin = () => {
+  setFormData({
+    username: 'admin',
+    password: 'admin123'
+  });
+};
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -216,7 +223,13 @@ function Login() {
                   </div>
                 </button>
               </div>
-
+<button
+  type="button"
+  className="quick-login-btn"
+  onClick={quickLoginAsAdmin}
+>
+  🔑 Quick Login as Admin
+</button>
               <p className="demo-note">Click any demo account to auto-fill credentials</p>
             </div>
           </div>

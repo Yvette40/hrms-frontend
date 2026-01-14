@@ -22,6 +22,10 @@ import Users from './Users';
 import Payslips from './Payslips';
 import MyAttendance from "./MyAttendance";
 import './axiosConfig';  // Add this line
+import EmployeeList from "./EmployeeList";
+import AddEmployee from "./AddEmployee";
+import LeaveManagement from './LeaveManagement';
+import DepartmentManagement from './DepartmentManagement';
 
 
 
@@ -46,7 +50,7 @@ function App() {
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/payroll" element={<Payroll />} />
             <Route path="/audit-trail" element={<AuditTrailPage />} />
-            <Route path="/employees" element={<EmployeePage />} />
+            
             <Route path="/approvals" element={<ApprovalRequestsPage />} />
             <Route path="/employee-portal" element={<EmployeeSelfService />} />
             <Route path="/reports" element={<PayrollReports />} />
@@ -54,11 +58,13 @@ function App() {
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/leave" element={<Leave />} />
             <Route path="/users" element={<Users />} />
             <Route path="/payslips" element={<Payslips />} />
             <Route path="/my-attendance" element={<MyAttendance />} /> 
-
+            <Route path="/employees" element={<EmployeeList />} />
+            <Route path="/employees/add" element={<AddEmployee />} />
+            <Route path="/leave" element={<LeaveManagement />} />
+            <Route path="/departments" element={<DepartmentManagement />} />
 
           </Route>
 

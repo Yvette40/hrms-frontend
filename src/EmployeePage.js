@@ -1,622 +1,633 @@
-import React, { useState, useEffect, useCallback } from "react";
+// src/EmployeePage.js - Unified Employee Management with Tabs
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useRole } from "./RoleContext";
 import "./EmployeePage.css";
 
 function EmployeePage() {
-  const { userRole } = useRole();
+  const [activeTab, setActiveTab] = useState("view"); // "view" or "add"
   const [employees, setEmployees] = useState([]);
-  
-  // Form fields
-  const [name, setName] = useState("");
-  const [nationalId, setNationalId] = useState("");
-  const [baseSalary, setBaseSalary] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [department, setDepartment] = useState("Engineering");
-  const [position, setPosition] = useState("");
-  const [createUserAccount, setCreateUserAccount] = useState(true);
-  const [username, setUsername] = useState("");
-  const [tempPassword, setTempPassword] = useState("TempPass123");
-  
-  const [message, setMessage] = useState("");
+  const [filteredEmployees, setFilteredEmployees] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
   const [loading, setLoading] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [showCredentials, setShowCredentials] = useState(null);
+  const [message, setMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [employeesPerPage] = useState(25);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-  // Filter states
-  const [filterDepartment, setFilterDepartment] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
+  // Form data for adding employee
+  const [formData, setFormData] = useState({
+    name: "",
+    national_id: "",
+    email: "",
+    phone_number: "",
+    department: "",
+    position: "",
+    base_salary: "",
+    hire_date: new Date().toISOString().split('T')[0],
+  });
 
   const token = localStorage.getItem("token");
 
-  // Department list matching the generated employee data
-  const DEPARTMENTS = [
+  const departments = [
     "Engineering",
-    "Finance", 
+    "Finance",
     "Sales",
     "Marketing",
-    "HR",
+    "Human Resources",
     "Operations",
     "IT",
     "Customer Service",
-    "Legal",
-    "Procurement",
-    "Admin",
-    "Logistics"
+    "Administration",
+    "Other",
   ];
 
-  const fetchEmployees = useCallback(async () => {
-    if (!token) return;
+  // Fetch employees
+  useEffect(() => {
+    if (activeTab === "view") {
+      fetchEmployees();
+    }
+  }, [activeTab]);
+
+  const fetchEmployees = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:5000/employees", {
+      setLoading(true);
+      const res = await axios.get("http://127.0.0.1:5000/employees?per_page=1000", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setEmployees(res.data.employees || res.data || []);
+      const empList = res.data.employees || [];
+      setEmployees(empList);
+      setFilteredEmployees(empList);
+      setLoading(false);
     } catch (err) {
-      console.error(err);
-      setMessage("❌ Could not load employees. Make sure you are logged in.");
-    }
-  }, [token]);
-
-  useEffect(() => {
-    fetchEmployees();
-  }, [fetchEmployees]);
-
-  // Auto-generate username from name
-  useEffect(() => {
-    if (name && createUserAccount && !editingId) {
-      const nameParts = name.toLowerCase().trim().split(" ");
-      if (nameParts.length >= 2) {
-        const generatedUsername = nameParts[0][0] + nameParts[nameParts.length - 1];
-        setUsername(generatedUsername);
-      } else if (nameParts.length === 1) {
-        setUsername(nameParts[0]);
-      }
-    }
-  }, [name, createUserAccount, editingId]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!name || !nationalId || !baseSalary) {
-      setMessage("⚠️ Please fill all required fields");
-      return;
-    }
-
-    setLoading(true);
-    setMessage("");
-    setShowCredentials(null);
-
-    try {
-      if (editingId) {
-        await axios.put(
-          `http://127.0.0.1:5000/employees/${editingId}`,
-          {
-            name,
-            national_id: nationalId,
-            base_salary: parseFloat(baseSalary),
-            email,
-            phone_number: phoneNumber,
-            department,
-            position,
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setMessage("✅ Employee updated successfully!");
-        setEditingId(null);
-      } else {
-        const response = await axios.post(
-          "http://127.0.0.1:5000/employees",
-          {
-            name,
-            national_id: nationalId,
-            base_salary: parseFloat(baseSalary),
-            email,
-            phone_number: phoneNumber,
-            department,
-            position,
-            create_user_account: createUserAccount,
-            username: username,
-            temp_password: tempPassword,
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        
-        setMessage("✅ Employee added successfully!");
-        
-        // Show credentials if user account was created
-        if (response.data.user_credentials) {
-          setShowCredentials(response.data.user_credentials);
-        }
-      }
-
-      // Reset form
-      setName("");
-      setNationalId("");
-      setBaseSalary("");
-      setEmail("");
-      setPhoneNumber("");
-      setDepartment("Engineering");
-      setPosition("");
-      setUsername("");
-      setTempPassword("TempPass123");
-      setCreateUserAccount(true);
-      
-      fetchEmployees();
-    } catch (err) {
-      console.error(err);
-      setMessage(
-        err.response?.data?.msg || "❌ Failed to save employee. Check console."
-      );
-    } finally {
+      console.error("Error fetching employees:", err);
+      setMessage("❌ Failed to load employees");
       setLoading(false);
     }
   };
 
-  const handleEdit = (emp) => {
-    setEditingId(emp.id);
-    setName(emp.name);
-    setNationalId(emp.national_id);
-    setBaseSalary(emp.base_salary);
-    setEmail(emp.email || "");
-    setPhoneNumber(emp.phone_number || "");
-    setDepartment(emp.department || "Engineering");
-    setPosition(emp.position || "");
-    setCreateUserAccount(false);
-    setMessage("✏️ Editing employee. Update fields and click Save.");
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Filter employees
+  useEffect(() => {
+    let filtered = employees;
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (emp) =>
+          emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          emp.national_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          emp.id?.toString().includes(searchTerm)
+      );
+    }
+
+    if (departmentFilter !== "all") {
+      filtered = filtered.filter((emp) => emp.department === departmentFilter);
+    }
+
+    setFilteredEmployees(filtered);
+    setCurrentPage(1);
+  }, [searchTerm, departmentFilter, employees]);
+
+  // Pagination
+  const indexOfLastEmployee = currentPage * employeesPerPage;
+  const indexOfFirstEmployee = indexOfLastEmployee - employeesPerPage;
+  const currentEmployees = filteredEmployees.slice(indexOfFirstEmployee, indexOfLastEmployee);
+  const totalPages = Math.ceil(filteredEmployees.length / employeesPerPage);
+
+  // Get unique departments
+  const availableDepartments = [...new Set(employees.map((e) => e.department).filter(Boolean))];
+
+  // Handle form change
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
+  // Handle form submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    try {
+      await axios.post("http://127.0.0.1:5000/employees", formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setMessage("✅ Employee added successfully!");
+
+      // Reset form
+      setFormData({
+        name: "",
+        national_id: "",
+        email: "",
+        phone_number: "",
+        department: "",
+        position: "",
+        base_salary: "",
+        hire_date: new Date().toISOString().split('T')[0],
+      });
+
+      setLoading(false);
+      
+      // Refresh employee list
+      fetchEmployees();
+    } catch (err) {
+      const errorMsg = err.response?.data?.msg || "Failed to add employee";
+      setMessage(`❌ ${errorMsg}`);
+      setLoading(false);
+    }
+  };
+
+  // View employee details
+  const handleViewDetails = async (empId) => {
+    try {
+      const res = await axios.get(`http://127.0.0.1:5000/employees/${empId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSelectedEmployee(res.data);
+      setShowModal(true);
+    } catch (err) {
+      setMessage("❌ Failed to load employee details");
+    }
+  };
+
+  // Delete employee
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this employee?")) return;
+    if (!window.confirm("Are you sure you want to delete this employee?")) {
+      return;
+    }
+
     try {
       await axios.delete(`http://127.0.0.1:5000/employees/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setMessage("🗑️ Employee deleted successfully!");
+      setMessage("✅ Employee deleted successfully");
       fetchEmployees();
     } catch (err) {
-      console.error(err);
-      setMessage("❌ Failed to delete employee.");
+      setMessage("❌ Failed to delete employee");
     }
   };
-
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    alert("Copied to clipboard!");
-  };
-
-  // Filter and search employees
-  const filteredEmployees = employees.filter(emp => {
-    const matchesDepartment = filterDepartment === "All" || emp.department === filterDepartment;
-    const matchesSearch = searchQuery === "" || 
-      emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      emp.national_id.includes(searchQuery) ||
-      (emp.position && emp.position.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (emp.email && emp.email.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    return matchesDepartment && matchesSearch;
-  });
-
-  // Department statistics
-  const departmentStats = employees.reduce((acc, emp) => {
-    const dept = emp.department || "Unassigned";
-    if (!acc[dept]) {
-      acc[dept] = { count: 0, totalSalary: 0 };
-    }
-    acc[dept].count++;
-    acc[dept].totalSalary += parseFloat(emp.base_salary || 0);
-    return acc;
-  }, {});
-
-  const canAdd = ['Admin', 'HR Officer'].includes(userRole);
-  const canEdit = ['Admin', 'HR Officer'].includes(userRole);
-  const canDelete = ['Admin'].includes(userRole);
-  const canView = ['Admin', 'HR Officer', 'Department Manager'].includes(userRole);
-
-  if (!canView) {
-    return (
-      <div className="employee-page">
-        <div className="page-header">
-          <h1>Employee Management</h1>
-        </div>
-        <div className="alert alert-error">
-          ⚠️ You do not have permission to view this page. Only Admin, HR Officer, and Department Manager can access employee management.
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="employee-page">
-      <div className="page-header">
+      {/* Header */}
+      <div className="page-header-gradient">
         <h1>👥 Employee Management</h1>
-        <p>Add, edit, and manage employee records</p>
+        <p className="subtitle-white">Role: Admin</p>
       </div>
 
-      {userRole === 'Department Manager' && (
-        <div className="alert alert-info">
-          ℹ️ As Department Manager, you can view all employees. Contact HR Officer to add or edit employee records.
-        </div>
-      )}
+      {/* Tabs */}
+      <div className="tabs-container">
+        <button
+          className={`tab-btn ${activeTab === "view" ? "active" : ""}`}
+          onClick={() => setActiveTab("view")}
+        >
+          📋 View Employees
+        </button>
+        <button
+          className={`tab-btn ${activeTab === "add" ? "active" : ""}`}
+          onClick={() => setActiveTab("add")}
+        >
+          ➕ Add Employee
+        </button>
+      </div>
 
       {message && (
-        <div className={`alert ${message.includes("✅") ? "alert-success" : message.includes("⚠️") ? "alert-info" : "alert-error"}`}>
+        <div className={`message-box ${message.includes("❌") ? "error" : "success"}`}>
           {message}
         </div>
       )}
 
-      {/* Credentials Display */}
-      {showCredentials && (
-        <div className="credentials-card">
-          <div className="credentials-header">
-            <h3>🔐 Employee Login Credentials Created</h3>
-            <button onClick={() => setShowCredentials(null)}>✕</button>
+      {/* View Employees Tab */}
+      {activeTab === "view" && (
+        <div className="view-employees-section">
+          {/* Stats */}
+          <div className="stats-bar">
+            <div className="stat-card">
+              <span className="stat-label">Total Employees</span>
+              <span className="stat-value">{employees.length}</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-label">Active</span>
+              <span className="stat-value">
+                {employees.filter((e) => e.active !== false).length}
+              </span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-label">Departments</span>
+              <span className="stat-value">{availableDepartments.length}</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-label">Filtered Results</span>
+              <span className="stat-value">{filteredEmployees.length}</span>
+            </div>
           </div>
-          <div className="credentials-body">
-            <p className="credentials-warning">
-              ⚠️ <strong>Important:</strong> Save these credentials and send them to the employee. They won't be shown again!
-            </p>
-            <div className="credential-item">
-              <label>Username:</label>
-              <div className="credential-value">
-                <code>{showCredentials.username}</code>
-                <button onClick={() => copyToClipboard(showCredentials.username)}>📋 Copy</button>
-              </div>
-            </div>
-            <div className="credential-item">
-              <label>Temporary Password:</label>
-              <div className="credential-value">
-                <code>{showCredentials.temp_password}</code>
-                <button onClick={() => copyToClipboard(showCredentials.temp_password)}>📋 Copy</button>
-              </div>
-            </div>
-            <p className="credentials-note">
-              💡 The employee will be required to change their password on first login.
-            </p>
-          </div>
-        </div>
-      )}
 
-      {/* Department Statistics */}
-      {employees.length > 0 && (
-        <div className="form-card" style={{ marginBottom: '24px' }}>
-          <h2>📊 Department Overview</h2>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
-            gap: '12px',
-            marginTop: '16px'
-          }}>
-            {Object.entries(departmentStats)
-              .sort((a, b) => b[1].count - a[1].count)
-              .map(([dept, stats]) => (
-                <div key={dept} style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                  color: 'white',
-                  padding: '16px',
-                  borderRadius: '8px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '8px', opacity: 0.9 }}>
-                    {dept}
-                  </div>
-                  <div style={{ fontSize: '1.6rem', fontWeight: '700', marginBottom: '4px' }}>
-                    {stats.count}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                    Avg: KES {Math.round(stats.totalSalary / stats.count).toLocaleString()}
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
-
-      {canAdd && (
-        <div className="form-card">
-          <h2>{editingId ? "✏️ Edit Employee" : "➕ Add New Employee"}</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Full Name *</label>
-                <input
-                  type="text"
-                  placeholder="e.g., John Mwangi"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={loading}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>National ID *</label>
-                <input
-                  type="text"
-                  placeholder="e.g., 12345678"
-                  value={nationalId}
-                  onChange={(e) => setNationalId(e.target.value)}
-                  disabled={loading}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  placeholder="e.g., john@glimmer.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Phone Number</label>
-                <input
-                  type="tel"
-                  placeholder="e.g., +254712345678"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Department *</label>
-                <select
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  disabled={loading}
-                  required
-                >
-                  {DEPARTMENTS.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Position</label>
-                <input
-                  type="text"
-                  placeholder="e.g., Software Engineer"
-                  value={position}
-                  onChange={(e) => setPosition(e.target.value)}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Base Salary (KES) *</label>
-                <input
-                  type="number"
-                  placeholder="e.g., 50000"
-                  value={baseSalary}
-                  onChange={(e) => setBaseSalary(e.target.value)}
-                  disabled={loading}
-                  required
-                />
-              </div>
-            </div>
-
-            {!editingId && (
-              <>
-                <div className="form-divider">
-                  <span>User Account Settings</span>
-                </div>
-
-                <div className="form-group checkbox-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={createUserAccount}
-                      onChange={(e) => setCreateUserAccount(e.target.checked)}
-                      disabled={loading}
-                    />
-                    <span>Create login account for this employee</span>
-                  </label>
-                  <p className="help-text">
-                    If checked, a user account will be created so the employee can log in to the system.
-                  </p>
-                </div>
-
-                {createUserAccount && (
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Username (auto-generated)</label>
-                      <input
-                        type="text"
-                        placeholder="Will be auto-generated"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        disabled={loading}
-                      />
-                      <p className="help-text">Auto-generated from name. You can change it if needed.</p>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Temporary Password</label>
-                      <input
-                        type="text"
-                        value={tempPassword}
-                        onChange={(e) => setTempPassword(e.target.value)}
-                        disabled={loading}
-                      />
-                      <p className="help-text">Employee must change this on first login.</p>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-
-            <div className="form-actions">
-              <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? "Saving..." : editingId ? "💾 Save Changes" : "➕ Add Employee"}
-              </button>
-              {editingId && (
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={() => {
-                    setEditingId(null);
-                    setName("");
-                    setNationalId("");
-                    setBaseSalary("");
-                    setEmail("");
-                    setPhoneNumber("");
-                    setDepartment("Engineering");
-                    setPosition("");
-                    setUsername("");
-                    setTempPassword("TempPass123");
-                    setCreateUserAccount(true);
-                    setMessage("");
-                  }}
-                >
-                  Cancel
+          {/* Controls */}
+          <div className="controls-section">
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="🔍 Search by name, ID, email, or national ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+              {searchTerm && (
+                <button className="clear-btn" onClick={() => setSearchTerm("")}>
+                  ✕
                 </button>
               )}
             </div>
-          </form>
-        </div>
-      )}
 
-      <div className="table-card">
-        <div style={{ marginBottom: '20px' }}>
-          <h2>📋 Current Employees ({filteredEmployees.length} {filterDepartment !== "All" ? `in ${filterDepartment}` : 'total'})</h2>
-          
-          {/* Filters */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '16px', 
-            flexWrap: 'wrap',
-            marginTop: '16px',
-            alignItems: 'center'
-          }}>
-            <div style={{ flex: '1', minWidth: '200px' }}>
-              <input
-                type="text"
-                placeholder="🔍 Search by name, ID, position, or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  fontSize: '0.95rem'
-                }}
-              />
-            </div>
-            
-            <div style={{ minWidth: '200px' }}>
+            <div className="filter-box">
+              <label>Department:</label>
               <select
-                value={filterDepartment}
-                onChange={(e) => setFilterDepartment(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  fontSize: '0.95rem'
-                }}
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className="filter-select"
               >
-                <option value="All">All Departments ({employees.length})</option>
-                {DEPARTMENTS.map(dept => {
-                  const count = departmentStats[dept]?.count || 0;
-                  return count > 0 ? (
-                    <option key={dept} value={dept}>{dept} ({count})</option>
-                  ) : null;
-                })}
+                <option value="all">All Departments ({employees.length})</option>
+                {availableDepartments.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept} ({employees.filter((e) => e.department === dept).length})
+                  </option>
+                ))}
               </select>
             </div>
           </div>
-        </div>
 
-        {filteredEmployees.length === 0 ? (
-          <p className="no-data">
-            {searchQuery || filterDepartment !== "All" 
-              ? "No employees match your search criteria." 
-              : "No employees found. Add your first employee above!"}
-          </p>
-        ) : (
-          <div className="table-wrapper">
-            <table className="employee-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>National ID</th>
-                  <th>Department</th>
-                  <th>Position</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Base Salary</th>
-                  {(canEdit || canDelete) && <th>Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEmployees.map((e) => (
-                  <tr key={e.id}>
-                    <td>{e.id}</td>
-                    <td style={{ fontWeight: '600' }}>{e.name}</td>
-                    <td>{e.national_id}</td>
-                    <td>
-                      <span style={{
-                        display: 'inline-block',
-                        padding: '4px 10px',
-                        background: '#2563eb',
-                        color: 'white',
-                        borderRadius: '12px',
-                        fontSize: '0.8rem',
-                        fontWeight: '600'
-                      }}>
-                        {e.department || "Unassigned"}
-                      </span>
-                    </td>
-                    <td>{e.position || "Employee"}</td>
-                    <td style={{ fontSize: '0.85rem', color: '#2563eb' }}>{e.email || "-"}</td>
-                    <td style={{ fontSize: '0.85rem' }}>{e.phone_number || "-"}</td>
-                    <td style={{ fontWeight: '600', color: '#059669' }}>
-                      KES {Number(e.base_salary).toLocaleString()}
-                    </td>
-                    {(canEdit || canDelete) && (
-                      <td className="actions-cell">
-                        {canEdit && (
-                          <button
-                            className="btn-icon btn-edit"
-                            onClick={() => handleEdit(e)}
-                            title="Edit"
-                          >
-                            ✏️
-                          </button>
-                        )}
-                        {canDelete && (
-                          <button
-                            className="btn-icon btn-delete"
-                            onClick={() => handleDelete(e.id)}
-                            title="Delete"
-                          >
-                            🗑️
-                          </button>
-                        )}
-                      </td>
+          {loading ? (
+            <div className="loading">⏳ Loading employees...</div>
+          ) : (
+            <>
+              <div className="table-info">
+                Showing {indexOfFirstEmployee + 1} - {Math.min(indexOfLastEmployee, filteredEmployees.length)} of {filteredEmployees.length} employees
+              </div>
+
+              <div className="table-container">
+                <table className="employee-table">
+                  <thead style={{color: 'white'}}>
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                      <th>National ID</th>
+                      <th>Department</th>
+                      <th>Position</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Base Salary</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentEmployees.length === 0 ? (
+                      <tr>
+                        <td colSpan="10" style={{ textAlign: "center", padding: "40px" }}>
+                          No employees found
+                        </td>
+                      </tr>
+                    ) : (
+                      currentEmployees.map((emp) => (
+                        <tr key={emp.id}>
+                          <td>{emp.id}</td>
+                          <td className="emp-name">{emp.name}</td>
+                          <td>{emp.national_id}</td>
+                          <td>
+                            <span className="dept-badge">{emp.department || "N/A"}</span>
+                          </td>
+                          <td>{emp.position || "Employee"}</td>
+                          <td className="email-col">{emp.email || "N/A"}</td>
+                          <td>{emp.phone_number || "N/A"}</td>
+                          <td className="salary-col">
+                            KSh {parseFloat(emp.base_salary || 0).toLocaleString()}
+                          </td>
+                          <td>
+                            <span className={`status-badge ${emp.active !== false ? "active" : "inactive"}`}>
+                              {emp.active !== false ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td className="actions-col">
+                            <button 
+                              className="btn-view" 
+                              title="View Details"
+                              onClick={() => handleViewDetails(emp.id)}
+                            >
+                              👁️
+                            </button>
+                            <button className="btn-edit" title="Edit Employee">
+                              ✏️
+                            </button>
+                            <button
+                              className="btn-delete"
+                              title="Delete Employee"
+                              onClick={() => handleDelete(emp.id)}
+                            >
+                              🗑️
+                            </button>
+                          </td>
+                        </tr>
+                      ))
                     )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button
+                    className="page-btn"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                  >
+                    « First
+                  </button>
+                  <button
+                    className="page-btn"
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    ‹ Prev
+                  </button>
+
+                  <span className="page-info">
+                    Page {currentPage} of {totalPages}
+                  </span>
+
+                  <button
+                    className="page-btn"
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next ›
+                  </button>
+                  <button
+                    className="page-btn"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Last »
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Add Employee Tab */}
+      {activeTab === "add" && (
+        <div className="add-employee-section">
+          <h2 className="section-heading">Add New Employee</h2>
+
+          <div className="form-container-white">
+            <form onSubmit={handleSubmit} className="employee-form">
+              {/* Personal Information */}
+              <div className="form-section">
+                <h3 className="section-title">📋 Personal Information</h3>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="name">
+                      Full Name <span className="required">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                      placeholder="John Doe"
+                      className="form-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="national_id">
+                      National ID <span className="required">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="national_id"
+                      name="national_id"
+                      value={formData.national_id}
+                      onChange={handleChange}
+                      required
+                      placeholder="12345678"
+                      className="form-input"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="form-section">
+                <h3 className="section-title">📞 Contact Information</h3>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="email">Email Address</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="john.doe@glimmer.com"
+                      className="form-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="phone_number">Phone Number</label>
+                    <input
+                      type="tel"
+                      id="phone_number"
+                      name="phone_number"
+                      value={formData.phone_number}
+                      onChange={handleChange}
+                      placeholder="+254712345678"
+                      className="form-input"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Employment Details */}
+              <div className="form-section">
+                <h3 className="section-title">💼 Employment Details</h3>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="department">
+                      Department <span className="required">*</span>
+                    </label>
+                    <select
+                      id="department"
+                      name="department"
+                      value={formData.department}
+                      onChange={handleChange}
+                      required
+                      className="form-select"
+                    >
+                      <option value="">-- Select Department --</option>
+                      {departments.map((dept) => (
+                        <option key={dept} value={dept}>
+                          {dept}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="position">Position</label>
+                    <input
+                      type="text"
+                      id="position"
+                      name="position"
+                      value={formData.position}
+                      onChange={handleChange}
+                      placeholder="Software Engineer"
+                      className="form-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="base_salary">
+                      Base Salary (KSh) <span className="required">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      id="base_salary"
+                      name="base_salary"
+                      value={formData.base_salary}
+                      onChange={handleChange}
+                      required
+                      min="0"
+                      step="0.01"
+                      placeholder="50000"
+                      className="form-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="hire_date">Hire Date</label>
+                    <input
+                      type="date"
+                      id="hire_date"
+                      name="hire_date"
+                      value={formData.hire_date}
+                      onChange={handleChange}
+                      className="form-input"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={() =>
+                    setFormData({
+                      name: "",
+                      national_id: "",
+                      email: "",
+                      phone_number: "",
+                      department: "",
+                      position: "",
+                      base_salary: "",
+                      hire_date: new Date().toISOString().split('T')[0],
+                    })
+                  }
+                  disabled={loading}
+                >
+                  🔄 Reset Form
+                </button>
+
+                <button type="submit" className="btn-submit" disabled={loading}>
+                  {loading ? "⏳ Adding Employee..." : "✅ Add Employee"}
+                </button>
+              </div>
+            </form>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* View Details Modal */}
+      {showModal && selectedEmployee && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>👤 Employee Details</h2>
+              <button className="modal-close" onClick={() => setShowModal(false)}>
+                ✕
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="detail-grid">
+                <div className="detail-item">
+                  <span className="detail-label">ID:</span>
+                  <span className="detail-value">{selectedEmployee.id}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Name:</span>
+                  <span className="detail-value">{selectedEmployee.name}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">National ID:</span>
+                  <span className="detail-value">{selectedEmployee.national_id}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Department:</span>
+                  <span className="detail-value">{selectedEmployee.department || "N/A"}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Position:</span>
+                  <span className="detail-value">{selectedEmployee.position || "N/A"}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Email:</span>
+                  <span className="detail-value">{selectedEmployee.email || "N/A"}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Phone:</span>
+                  <span className="detail-value">{selectedEmployee.phone_number || "N/A"}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Base Salary:</span>
+                  <span className="detail-value">
+                    KSh {parseFloat(selectedEmployee.base_salary || 0).toLocaleString()}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Status:</span>
+                  <span className={`status-badge ${selectedEmployee.active !== false ? "active" : "inactive"}`}>
+                    {selectedEmployee.active !== false ? "Active" : "Inactive"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn-modal-close" onClick={() => setShowModal(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
