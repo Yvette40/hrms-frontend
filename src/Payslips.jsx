@@ -40,10 +40,36 @@ function Payslips() {
     }
   };
 
-  const downloadPayslip = (payslip) => {
-    alert('Download feature coming soon!');
-    // TODO: Implement PDF download
-  };
+ const downloadPayslip = async (payslip) => {
+  try {
+    const response = await axios.get(
+      `http://127.0.0.1:5000/payroll/payslip/${payslip.id}/pdf`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      }
+    );
+    
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    
+    const date = new Date(payslip.period_start);
+    const month = date.toLocaleString('default', { month: 'short' });
+    const year = date.getFullYear();
+    link.setAttribute('download', `Payslip_${month}_${year}.pdf`);
+    
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    alert('✅ Payslip downloaded successfully!');
+  } catch (err) {
+    alert('❌ Failed to download payslip PDF');
+    console.error('Download error:', err);
+  }
+};
 
   if (loading) {
     return <div className="loading">Loading your payslips...</div>;

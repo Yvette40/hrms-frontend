@@ -1,4 +1,4 @@
-// src/EmployeeList.js - View All Employees with Edit
+// src/EmployeeList.js - ENHANCED with View Details Modal
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./EmployeeList.css";
@@ -13,6 +13,7 @@ function EmployeeList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [employeesPerPage] = useState(25);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [editFormData, setEditFormData] = useState({
     name: "",
@@ -88,6 +89,13 @@ function EmployeeList() {
   const currentEmployees = filteredEmployees.slice(indexOfFirstEmployee, indexOfLastEmployee);
   const totalPages = Math.ceil(filteredEmployees.length / employeesPerPage);
 
+  // View Details
+  const handleViewClick = (emp) => {
+    setSelectedEmployee(emp);
+    setShowViewModal(true);
+  };
+
+  // Edit
   const handleEditClick = (emp) => {
     setSelectedEmployee(emp);
     setEditFormData({
@@ -127,6 +135,7 @@ function EmployeeList() {
     }
   };
 
+  // Delete
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Are you sure you want to delete ${name}?`)) {
       return;
@@ -263,6 +272,13 @@ function EmployeeList() {
                   </td>
                   <td className="actions-col">
                     <button
+                      className="btn-view"
+                      title="View Details"
+                      onClick={() => handleViewClick(emp)}
+                    >
+                      👁️
+                    </button>
+                    <button
                       className="btn-edit"
                       title="Edit Employee"
                       onClick={() => handleEditClick(emp)}
@@ -322,6 +338,100 @@ function EmployeeList() {
         </div>
       )}
 
+      {/* View Details Modal */}
+      {showViewModal && selectedEmployee && (
+        <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
+          <div className="modal-content view-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>👁️ Employee Details</h2>
+            
+            <div className="detail-section">
+              <h3>Personal Information</h3>
+              <div className="detail-grid">
+                <div className="detail-item">
+                  <span className="detail-label">Employee ID:</span>
+                  <span className="detail-value">{selectedEmployee.id}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Full Name:</span>
+                  <span className="detail-value">{selectedEmployee.name}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">National ID:</span>
+                  <span className="detail-value">{selectedEmployee.national_id}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Status:</span>
+                  <span className={`status-badge ${selectedEmployee.active !== false ? "active" : "inactive"}`}>
+                    {selectedEmployee.active !== false ? "Active" : "Inactive"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="detail-section">
+              <h3>Contact Information</h3>
+              <div className="detail-grid">
+                <div className="detail-item">
+                  <span className="detail-label">Email:</span>
+                  <span className="detail-value">{selectedEmployee.email || "N/A"}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Phone:</span>
+                  <span className="detail-value">{selectedEmployee.phone_number || "N/A"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="detail-section">
+              <h3>Employment Details</h3>
+              <div className="detail-grid">
+                <div className="detail-item">
+                  <span className="detail-label">Department:</span>
+                  <span className="detail-value dept-badge">{selectedEmployee.department || "N/A"}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Position:</span>
+                  <span className="detail-value">{selectedEmployee.position || "Employee"}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Base Salary:</span>
+                  <span className="detail-value salary-highlight">
+                    KSh {parseFloat(selectedEmployee.base_salary || 0).toLocaleString()}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Hire Date:</span>
+                  <span className="detail-value">
+                    {selectedEmployee.hire_date 
+                      ? new Date(selectedEmployee.hire_date).toLocaleDateString()
+                      : "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-buttons">
+              <button
+                className="btn-cancel"
+                onClick={() => setShowViewModal(false)}
+              >
+                Close
+              </button>
+              <button
+                className="btn-edit"
+                onClick={() => {
+                  setShowViewModal(false);
+                  handleEditClick(selectedEmployee);
+                }}
+              >
+                ✏️ Edit Employee
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
       {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>

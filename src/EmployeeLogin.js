@@ -5,7 +5,7 @@ import axios from "./axiosConfig";
 import config from "./config";
 import "./Login.css";
 
-function Login() {
+function EmployeeLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -66,11 +66,6 @@ function Login() {
     }
   };
 
-  const quickLogin = (demoUsername, demoPassword) => {
-    setUsername(demoUsername);
-    setPassword(demoPassword);
-  };
-
   return (
     <div className="login-page">
       <div className="login-container">
@@ -85,13 +80,13 @@ function Login() {
               </svg>
             </div>
             <h1>GLIMMER HRMS</h1>
-            <p>Human Resource Management System</p>
+            <p>Employee Portal</p>
           </div>
 
           {/* Login Form */}
           <div className="login-content">
-            <h2>Sign In</h2>
-            <p className="login-subtitle">Enter your credentials to access your account</p>
+            <h2>Employee Sign In</h2>
+            <p className="login-subtitle">Enter your employee credentials to access your account</p>
 
             {error && (
               <div className="alert-error">
@@ -106,7 +101,7 @@ function Login() {
 
             <form onSubmit={handleLogin}>
               <div className="form-group">
-                <label>Username</label>
+                <label>Employee Username</label>
                 <div className="input-group">
                   <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeWidth="2"/>
@@ -118,6 +113,7 @@ function Login() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
+                    autoFocus
                   />
                 </div>
               </div>
@@ -155,6 +151,7 @@ function Login() {
                   />
                   <span>Remember me</span>
                 </label>
+                <a href="#" className="forgot-link">Forgot password?</a>
               </div>
 
               <button type="submit" className="btn-login" disabled={loading}>
@@ -162,64 +159,18 @@ function Login() {
               </button>
             </form>
 
-            {/* Demo Accounts */}
-            <div className="demo-section">
-              <div className="divider">
-                <span>Demo Accounts</span>
-              </div>
-
-              <div className="demo-grid">
-                <button
-                  type="button"
-                  className="demo-btn admin"
-                  onClick={() => quickLogin("admin", "admin123")}
-                >
-                  <div className="demo-icon">👤</div>
-                  <div className="demo-text">
-                    <strong>Admin</strong>
-                    <span>Full Access</span>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  className="demo-btn hr"
-                  onClick={() => quickLogin("hr_officer", "OfficerPass123")}
-                >
-                  <div className="demo-icon">💼</div>
-                  <div className="demo-text">
-                    <strong>HR Officer</strong>
-                    <span>HR Operations</span>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  className="demo-btn manager"
-                  onClick={() => quickLogin("dept_manager", "DeptPass123")}
-                >
-                  <div className="demo-icon">📊</div>
-                  <div className="demo-text">
-                    <strong>Manager</strong>
-                    <span>Department</span>
-                  </div>
-                </button>
-
-                {/* MODIFIED: Employee button now navigates to employee login page */}
-                <button
-                  type="button"
-                  className="demo-btn employee"
-                  onClick={() => navigate("/employee-login")}
-                >
-                  <div className="demo-icon">👨‍💻</div>
-                  <div className="demo-text">
-                    <strong>Employee Login</strong>
-                    <span>Staff Portal →</span>
-                  </div>
-                </button>
-              </div>
-
-              <p className="demo-note">Click any demo account to auto-fill credentials</p>
+            {/* Back to Main Login */}
+            <div className="back-section">
+              <button
+                type="button"
+                className="btn-back"
+                onClick={() => navigate("/")}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{width: '18px', height: '18px', marginRight: '8px'}}>
+                  <path d="M19 12H5M12 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Back to Main Login
+              </button>
             </div>
           </div>
 
@@ -233,4 +184,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default EmployeeLogin;

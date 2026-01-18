@@ -119,7 +119,7 @@ function Navbar() {
     setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
-  if (location.pathname === "/login") return null;
+  if (location.pathname === "/login" || location.pathname === "/employee-login") return null;
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -148,6 +148,7 @@ function Navbar() {
       case 'Department Manager':
         return { ...baseStyle, background: '#10b981', color: 'white' };
       case 'Employee':
+      case 'employee':
         return { ...baseStyle, background: '#f59e0b', color: 'white' };
       default:
         return { ...baseStyle, background: '#6b7280', color: 'white' };
@@ -223,16 +224,48 @@ function Navbar() {
             <span className="nav-text">Dashboard</span>
           </Link>
 
-          {userRole === 'Employee' && (
-            <Link className={`nav-link ${isActive("/employee-portal")}`} to="/employee-portal">
-              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="12" cy="7" r="4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span className="nav-text">My Portal</span>
-            </Link>
+          {/* EMPLOYEE SPECIFIC MENU */}
+          {(userRole === 'Employee' || userRole === 'employee') && (
+            <>
+              <Link className={`nav-link ${isActive("/my-attendance")}`} to="/my-attendance">
+                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="nav-text">My Attendance</span>
+              </Link>
+
+              <Link className={`nav-link ${isActive("/payslips")}`} to="/payslips">
+                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <line x1="12" y1="1" x2="12" y2="23" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="nav-text">My Payslips</span>
+              </Link>
+
+              <Link className={`nav-link ${isActive("/leave")}`} to="/leave">
+                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="nav-text">Leave Requests</span>
+              </Link>
+
+              <Link className={`nav-link ${isActive("/profile")}`} to="/profile">
+                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="7" r="4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="nav-text">My Profile</span>
+              </Link>
+            </>
           )}
 
+          {/* ADMIN, HR OFFICER, MANAGER MENUS (Keep existing) */}
           {['Admin', 'HR Officer', 'Department Manager'].includes(userRole) && (
             <Link className={`nav-link ${isActive("/employees")}`} to="/employees">
               <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -302,35 +335,33 @@ function Navbar() {
           )}
 
           {['Admin'].includes(userRole) && (
-            <Link className={`nav-link ${isActive("/approvals")}`} to="/approvals">
-              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <polyline points="20 6 9 17 4 12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span className="nav-text">Approvals</span>
-            </Link>
-          )}
+            <>
+              <Link className={`nav-link ${isActive("/approvals")}`} to="/approvals">
+                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <polyline points="20 6 9 17 4 12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="nav-text">Approvals</span>
+              </Link>
 
-          {['Admin'].includes(userRole) && (
-            <Link className={`nav-link ${isActive("/scheduler")}`} to="/scheduler">
-              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <circle cx="12" cy="12" r="10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <polyline points="12 6 12 12 16 14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span className="nav-text">Scheduler</span>
-            </Link>
-          )}
+              <Link className={`nav-link ${isActive("/scheduler")}`} to="/scheduler">
+                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points="12 6 12 12 16 14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="nav-text">Scheduler</span>
+              </Link>
 
-          {['Admin', 'HR Officer'].includes(userRole) && (
-            <Link className={`nav-link ${isActive("/audit-trail")}`} to="/audit-trail">
-              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <polyline points="14 2 14 8 20 8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <line x1="16" y1="13" x2="8" y2="13" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <line x1="16" y1="17" x2="8" y2="17" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <polyline points="10 9 9 9 8 9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span className="nav-text">Audit Trail</span>
-            </Link>
+              <Link className={`nav-link ${isActive("/audit-trail")}`} to="/audit-trail">
+                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points="14 2 14 8 20 8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="16" y1="13" x2="8" y2="13" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="16" y1="17" x2="8" y2="17" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points="10 9 9 9 8 9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="nav-text">Audit Trail</span>
+              </Link>
+            </>
           )}
 
           {['Admin', 'HR Officer', 'Department Manager'].includes(userRole) && (
@@ -418,7 +449,7 @@ function Navbar() {
               <div className="quick-actions-dropdown">
                 <div className="dropdown-header">Quick Actions</div>
                 {userRole === 'Admin' && (
-                  <div className="dropdown-item" onClick={() => { navigate('/employees'); setQuickActionsOpen(false); }}>
+                  <div className="dropdown-item" onClick={() => { navigate('/employees/add'); setQuickActionsOpen(false); }}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeWidth="2"/>
                       <circle cx="8.5" cy="7" r="4" strokeWidth="2"/>
@@ -428,23 +459,54 @@ function Navbar() {
                     <span>Add Employee</span>
                   </div>
                 )}
-                <div className="dropdown-item" onClick={() => { navigate('/attendance'); setQuickActionsOpen(false); }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <rect x="3" y="4" width="18" height="18" rx="2" strokeWidth="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2"/>
-                    <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2"/>
-                    <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2"/>
-                  </svg>
-                  <span>Mark Attendance</span>
-                </div>
-                <div className="dropdown-item" onClick={() => { navigate('/reports'); setQuickActionsOpen(false); }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <line x1="18" y1="20" x2="18" y2="10" strokeWidth="2"/>
-                    <line x1="12" y1="20" x2="12" y2="4" strokeWidth="2"/>
-                    <line x1="6" y1="20" x2="6" y2="14" strokeWidth="2"/>
-                  </svg>
-                  <span>Generate Report</span>
-                </div>
+                {(userRole === 'Employee' || userRole === 'employee') ? (
+                  <>
+                    <div className="dropdown-item" onClick={() => { navigate('/my-attendance'); setQuickActionsOpen(false); }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="4" width="18" height="18" rx="2" strokeWidth="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2"/>
+                        <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2"/>
+                        <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2"/>
+                      </svg>
+                      <span>My Attendance</span>
+                    </div>
+                    <div className="dropdown-item" onClick={() => { navigate('/payslips'); setQuickActionsOpen(false); }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <line x1="12" y1="1" x2="12" y2="23" strokeWidth="2"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" strokeWidth="2"/>
+                      </svg>
+                      <span>View Payslips</span>
+                    </div>
+                    <div className="dropdown-item" onClick={() => { navigate('/leave'); setQuickActionsOpen(false); }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="4" width="18" height="18" rx="2" strokeWidth="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2"/>
+                        <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2"/>
+                      </svg>
+                      <span>Request Leave</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="dropdown-item" onClick={() => { navigate('/attendance'); setQuickActionsOpen(false); }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="4" width="18" height="18" rx="2" strokeWidth="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2"/>
+                        <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2"/>
+                        <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2"/>
+                      </svg>
+                      <span>Mark Attendance</span>
+                    </div>
+                    <div className="dropdown-item" onClick={() => { navigate('/reports'); setQuickActionsOpen(false); }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <line x1="18" y1="20" x2="18" y2="10" strokeWidth="2"/>
+                        <line x1="12" y1="20" x2="12" y2="4" strokeWidth="2"/>
+                        <line x1="6" y1="20" x2="6" y2="14" strokeWidth="2"/>
+                      </svg>
+                      <span>Generate Report</span>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -601,114 +663,140 @@ function Navbar() {
           <span className="nav-text">Dashboard</span>
         </Link>
 
-        {userRole === 'Employee' && (
-          <Link className={`nav-link ${isActive("/employee-portal")}`} to="/employee-portal" onClick={() => setMobileMenuOpen(false)}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="12" cy="7" r="4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="nav-text">My Portal</span>
-          </Link>
+        {/* MOBILE - EMPLOYEE MENU */}
+        {(userRole === 'Employee' || userRole === 'employee') && (
+          <>
+            <Link className={`nav-link ${isActive("/my-attendance")}`} to="/my-attendance" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2"/>
+                <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2"/>
+                <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2"/>
+                <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2"/>
+              </svg>
+              <span className="nav-text">My Attendance</span>
+            </Link>
+
+            <Link className={`nav-link ${isActive("/payslips")}`} to="/payslips" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="12" y1="1" x2="12" y2="23" strokeWidth="2"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" strokeWidth="2"/>
+              </svg>
+              <span className="nav-text">My Payslips</span>
+            </Link>
+
+            <Link className={`nav-link ${isActive("/leave")}`} to="/leave" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2"/>
+                <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2"/>
+                <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2"/>
+                <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2"/>
+              </svg>
+              <span className="nav-text">Leave Requests</span>
+            </Link>
+
+            <Link className={`nav-link ${isActive("/profile")}`} to="/profile" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeWidth="2"/>
+                <circle cx="12" cy="7" r="4" strokeWidth="2"/>
+              </svg>
+              <span className="nav-text">My Profile</span>
+            </Link>
+          </>
         )}
 
+        {/* Rest of mobile menu for other roles - keep existing */}
         {['Admin', 'HR Officer', 'Department Manager'].includes(userRole) && (
-          <Link className={`nav-link ${isActive("/employees")}`} to="/employees" onClick={() => setMobileMenuOpen(false)}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="9" cy="7" r="4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="nav-text">Employees</span>
-          </Link>
-        )}
+          <>
+            <Link className={`nav-link ${isActive("/employees")}`} to="/employees" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="9" cy="7" r="4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="nav-text">Employees</span>
+            </Link>
 
-        {['Admin', 'HR Officer', 'Department Manager'].includes(userRole) && (
-          <Link className={`nav-link ${isActive("/attendance")}`} to="/attendance" onClick={() => setMobileMenuOpen(false)}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="nav-text">Attendance</span>
-          </Link>
+            <Link className={`nav-link ${isActive("/attendance")}`} to="/attendance" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="nav-text">Attendance</span>
+            </Link>
+          </>
         )}
 
         {['Admin', 'HR Officer'].includes(userRole) && (
-          <Link className={`nav-link ${isActive("/payroll")}`} to="/payroll" onClick={() => setMobileMenuOpen(false)}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <line x1="12" y1="1" x2="12" y2="23" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="nav-text">Payroll</span>
-          </Link>
+          <>
+            <Link className={`nav-link ${isActive("/payroll")}`} to="/payroll" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="12" y1="1" x2="12" y2="23" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="nav-text">Payroll</span>
+            </Link>
+
+            <Link className={`nav-link ${isActive("/leave")}`} to="/leave" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="nav-text">Leave Management</span>
+            </Link>
+
+            <Link className={`nav-link ${isActive("/departments")}`} to="/departments" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="9 22 9 12 15 12 15 22" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="nav-text">Departments</span>
+            </Link>
+          </>
         )}
 
         {userRole === 'Admin' && (
-          <Link className={`nav-link ${isActive("/users")}`} to="/users" onClick={() => setMobileMenuOpen(false)}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="9" cy="7" r="4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="nav-text">Manage Users</span>
-          </Link>
-        )}
+          <>
+            <Link className={`nav-link ${isActive("/users")}`} to="/users" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="9" cy="7" r="4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="nav-text">Manage Users</span>
+            </Link>
 
-        {['Admin', 'HR Officer'].includes(userRole) && (
-          <Link className={`nav-link ${isActive("/leave")}`} to="/leave" onClick={() => setMobileMenuOpen(false)}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="nav-text">Leave Management</span>
-          </Link>
-        )}
+            <Link className={`nav-link ${isActive("/approvals")}`} to="/approvals" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="20 6 9 17 4 12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="nav-text">Approvals</span>
+            </Link>
 
-        {['Admin', 'HR Officer'].includes(userRole) && (
-          <Link className={`nav-link ${isActive("/departments")}`} to="/departments" onClick={() => setMobileMenuOpen(false)}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <polyline points="9 22 9 12 15 12 15 22" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="nav-text">Departments</span>
-          </Link>
-        )}
+            <Link className={`nav-link ${isActive("/scheduler")}`} to="/scheduler" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="12 6 12 12 16 14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="nav-text">Scheduler</span>
+            </Link>
 
-        {['Admin'].includes(userRole) && (
-          <Link className={`nav-link ${isActive("/approvals")}`} to="/approvals" onClick={() => setMobileMenuOpen(false)}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <polyline points="20 6 9 17 4 12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="nav-text">Approvals</span>
-          </Link>
-        )}
-
-        {['Admin'].includes(userRole) && (
-          <Link className={`nav-link ${isActive("/scheduler")}`} to="/scheduler" onClick={() => setMobileMenuOpen(false)}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <circle cx="12" cy="12" r="10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <polyline points="12 6 12 12 16 14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="nav-text">Scheduler</span>
-          </Link>
-        )}
-
-        {['Admin', 'HR Officer'].includes(userRole) && (
-          <Link className={`nav-link ${isActive("/audit-trail")}`} to="/audit-trail" onClick={() => setMobileMenuOpen(false)}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <polyline points="14 2 14 8 20 8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <line x1="16" y1="13" x2="8" y2="13" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <line x1="16" y1="17" x2="8" y2="17" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <polyline points="10 9 9 9 8 9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="nav-text">Audit Trail</span>
-          </Link>
+            <Link className={`nav-link ${isActive("/audit-trail")}`} to="/audit-trail" onClick={() => setMobileMenuOpen(false)}>
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="14 2 14 8 20 8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="16" y1="13" x2="8" y2="13" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="16" y1="17" x2="8" y2="17" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="10 9 9 9 8 9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="nav-text">Audit Trail</span>
+            </Link>
+          </>
         )}
 
         {['Admin', 'HR Officer', 'Department Manager'].includes(userRole) && (

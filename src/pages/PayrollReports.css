@@ -1,109 +1,719 @@
-/* src/pages/PayrollReports.css */
+/* src/pages/PayrollReports.css - STUNNING Reports Dashboard */
 
-.payroll-reports {
+.reports-page {
   padding: 20px;
-  background: #f5f5f5;
-  min-height: 100vh;
+  max-width: 1600px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease;
 }
 
-.reports-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 30px;
-  border-radius: 10px;
-  margin-bottom: 30px;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Page Header */
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.reports-header h2 {
-  margin: 0;
-  font-size: 2rem;
-}
-
-.header-controls {
-  display: flex;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
   gap: 15px;
-  align-items: center;
 }
 
-.header-controls .form-select {
-  width: auto;
-  min-width: 150px;
+.page-header h1 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: #7f8c8d;
+  font-size: 14px;
+  margin: 5px 0 0 0;
+}
+
+.btn-export {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-export:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Loading */
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* View Tabs */
+.view-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 0;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #7f8c8d;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  top: 2px;
+}
+
+.tab:hover {
+  color: #2c3e50;
+}
+
+.tab.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+/* Filters */
+.filters-section {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.filter-group select {
+  padding: 10px 15px;
+  border: 2px solid #ecf0f1;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 180px;
+}
+
+.filter-group select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.filter-info {
+  margin-left: auto;
+  color: #7f8c8d;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 35px;
 }
 
 .stat-card {
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
-  height: 100%;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.3s;
+  border-left: 4px solid;
 }
 
 .stat-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
 }
 
-.stat-card .card-subtitle {
-  font-size: 0.85rem;
+.stat-card.primary { border-left-color: #3498db; }
+.stat-card.success { border-left-color: #27ae60; }
+.stat-card.info { border-left-color: #9b59b6; }
+.stat-card.warning { border-left-color: #f39c12; }
+
+.stat-icon {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #2c3e50;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #7f8c8d;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 10px;
-}
-
-.stat-card .card-title {
-  font-size: 1.8rem;
-  font-weight: bold;
-  margin: 0;
-}
-
-.card {
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-  background: white;
-  border-bottom: 2px solid #f0f0f0;
-  padding: 20px;
-}
-
-.card-header h5 {
-  margin: 0;
-  color: #333;
   font-weight: 600;
 }
 
-.table-hover tbody tr:hover {
-  background-color: #f8f9fa;
+/* Deductions Section */
+.deductions-section {
+  margin-bottom: 35px;
+}
+
+.deductions-section h2 {
+  font-size: 24px;
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.deductions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.deduction-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.3s;
+}
+
+.deduction-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.deduction-card.nssf { border-left: 4px solid #3498db; }
+.deduction-card.nhif { border-left: 4px solid #27ae60; }
+.deduction-card.paye { border-left: 4px solid #e74c3c; }
+.deduction-card.housing { border-left: 4px solid #f39c12; }
+
+.deduction-icon {
+  font-size: 36px;
+}
+
+.deduction-content {
+  flex: 1;
+}
+
+.deduction-label {
+  font-size: 13px;
+  color: #7f8c8d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.deduction-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.deduction-percent {
+  font-size: 12px;
+  color: #95a5a6;
+}
+
+/* Department Section */
+.department-section {
+  margin-bottom: 35px;
+}
+
+.department-section h2 {
+  font-size: 24px;
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.department-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.dept-card-report {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  transition: all 0.3s;
+  border-left: 4px solid #3498db;
+}
+
+.dept-card-report:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.dept-header-report {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.dept-header-report h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #2c3e50;
+}
+
+.dept-count {
+  font-size: 12px;
+  color: #7f8c8d;
+  background: #ecf0f1;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.dept-stats-report {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dept-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dept-stat-label {
+  font-size: 13px;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.dept-stat-value {
+  font-size: 15px;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Details Section */
+.details-section {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.table-info {
+  margin-bottom: 20px;
+  color: #7f8c8d;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.payroll-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1200px;
+}
+
+.payroll-table thead {
+  background: #34495e;
+}
+
+.payroll-table thead th {
+  padding: 15px;
+  text-align: left;
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payroll-table tbody tr {
+  border-bottom: 1px solid #ecf0f1;
+  transition: background 0.2s;
+}
+
+.payroll-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.payroll-table td {
+  padding: 15px;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.emp-name {
+  font-weight: 600;
+}
+
+.dept-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #3498db;
+  color: white;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.money {
+  font-family: 'Courier New', monospace;
+  text-align: right;
+  font-weight: 600;
+}
+
+.money.deduction {
+  color: #e74c3c;
+}
+
+.money.net {
+  color: #27ae60;
+  font-size: 15px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-badge.approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.page-btn {
+  padding: 8px 16px;
+  background: white;
+  border: 2px solid #ecf0f1;
+  border-radius: 6px;
+  color: #2c3e50;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* Charts Section */
+.charts-section {
+  background: white;
+  padding: 60px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.chart-placeholder {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.placeholder-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.chart-placeholder h3 {
+  font-size: 28px;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.chart-placeholder p {
+  font-size: 16px;
+  color: #7f8c8d;
+  margin-bottom: 25px;
+}
+
+.chart-list {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+  display: inline-block;
+}
+
+.chart-list li {
+  padding: 10px 0;
+  font-size: 15px;
+  color: #2c3e50;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.chart-list li:last-child {
+  border-bottom: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .reports-page {
+    padding: 15px;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+  }
+
+  .stats-grid,
+  .deductions-grid,
+  .department-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-info {
+    margin-left: 0;
+  }
+
+  .view-tabs {
+    overflow-x: auto;
+  }
+
+  .tab {
+    white-space: nowrap;
+  }
+}
+/* Add this to PayrollReports.css */
+
+/* Charts Section */
+.charts-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 25px;
+}
+
+.chart-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  transition: all 0.3s;
+}
+
+.chart-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.chart-card h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.chart-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Bar Chart Animations */
+.bar-animated {
+  animation: barGrow 1s ease-out;
+  transform-origin: bottom;
+}
+
+@keyframes barGrow {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Pie Chart Animations */
+.pie-slice {
+  transition: all 0.3s;
   cursor: pointer;
 }
 
+.pie-slice:hover {
+  opacity: 0.8;
+  filter: brightness(1.1);
+}
+
+/* Line Chart Animations */
+.line-animated {
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  animation: lineDraw 2s ease-out forwards;
+}
+
+@keyframes lineDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Horizontal Bar Chart */
+.horizontal-bar-chart rect {
+  transition: all 0.3s;
+}
+
+.horizontal-bar-chart rect:hover {
+  filter: brightness(1.1);
+}
+
+/* Error Message */
+.error-message {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.error-message h2 {
+  color: #e74c3c;
+  margin-bottom: 15px;
+}
+
+.error-message p {
+  color: #7f8c8d;
+  margin-bottom: 25px;
+}
+
+.error-message button {
+  padding: 12px 30px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.error-message button:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+}
+
+/* Responsive Charts */
 @media (max-width: 768px) {
-  .reports-header {
-    flex-direction: column;
-    gap: 15px;
+  .charts-section {
+    grid-template-columns: 1fr;
   }
   
-  .reports-header h2 {
-    font-size: 1.5rem;
+  .chart-card {
+    padding: 15px;
   }
   
-  .header-controls {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .header-controls .form-select,
-  .header-controls .btn {
-    width: 100%;
-  }
-  
-  .stat-card .card-title {
-    font-size: 1.4rem;
+  .chart-wrapper svg {
+    max-width: 100%;
+    height: auto;
   }
 }

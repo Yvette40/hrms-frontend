@@ -30,6 +30,8 @@ const config = {
     update: (id) => `${API_BASE_URL}/employees/${id}`,
     delete: (id) => `${API_BASE_URL}/employees/${id}`,
     myInfo: `${API_BASE_URL}/my-info`,
+    // 🆕 Employee profile endpoints
+    profile: `${API_BASE_URL}/api/employee/profile`,
   },
 
   // Attendance endpoints
@@ -44,7 +46,7 @@ const config = {
   payroll: {
     list: `${API_BASE_URL}/payrolls`,
     calculate: `${API_BASE_URL}/payroll/calculate`,
-    approve: (id) => `${API_BASE_URL}/payrolls/${id}/approve`,
+    approve: (id) => `${API_BASE_URL}/payroll/approve/${id}`,
     myPayslips: `${API_BASE_URL}/my-payslips`,
   },
 
@@ -130,6 +132,11 @@ export default config;
  * 
  * // Update employee
  * axios.put(config.employees.update(employeeId), data, {
+ *   headers: { Authorization: `Bearer ${token}` }
+ * });
+ * 
+ * // Get employee profile (NEW)
+ * axios.get(config.employees.profile, {
  *   headers: { Authorization: `Bearer ${token}` }
  * });
  */
